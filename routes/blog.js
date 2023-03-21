@@ -69,10 +69,38 @@ router.get("/posts/:id", async function(req, res) {
     month: "long",
     day: "numeric"
   });
-  
+
   post.date = post.date.toISOString();
 
   res.render("post-detail", { post: post });
-})
+});
+
+router.get("/posts/:id/edit", async function(req, res) {
+  const postId = req.params.id;
+  const post = await db
+    .getDb()
+    .collection("posts")
+    .findOne({ _id: new mongodb.ObjectId(postId) }, { title: 1, summary: 1, body: 1 });
+
+    if (!post) {
+      res.status(404).render("404");
+      return;
+    }
+
+    res.render("update-post", { post: post });
+});
+
+// 데이터베이스 갱신
+router.post("/posts/:id/edit", async function(req, res) {
+  const postId = new mongodb.ObjectId(req.params.id);
+
+  const result = await db.getDb().collection("posts").updateOne({ _id: postId }, { $set: {
+    title: req.body.title,
+    summary: req.body.summary,
+    body: req.body.content,
+  }});
+
+  res.redirect("/posts");
+});
 
 module.exports = router;
