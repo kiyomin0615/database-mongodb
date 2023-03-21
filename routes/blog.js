@@ -49,12 +49,20 @@ router.post("/posts", async function(req, res) {
   res.redirect("/posts");
 });
 
-router.get("/posts/:id", async function(req, res) {
+router.get("/posts/:id", async function(req, res, next) {
   const postId = req.params.id;
+
+  // 비동기 에러 처리
+  try {
+    postId = new mongodb.ObjectId(postId)
+  } catch (error) {
+    next(error); // 요청을 다음 미들웨어 함수로 넘긴다
+  }
+
   const post = await db
     .getDb()
     .collection("posts")
-    .findOne({ _id: new mongodb.ObjectId(postId) }, { summary: 0 });
+    .findOne({ _id: postId }, { summary: 0 });
     // .project({ summary: 0 })
 
   if (!post) {
