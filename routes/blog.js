@@ -62,6 +62,16 @@ router.get("/posts/:id", async function(req, res) {
     return;
   }
 
+  // 자바스크립트의 프로퍼티 추가 방법
+  post.humanReadableDate = post.date.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+  
+  post.date = post.date.toISOString();
+
   res.render("post-detail", { post: post });
 })
 
