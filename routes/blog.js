@@ -1,4 +1,6 @@
 const express = require('express');
+const mongodb = require("mongodb");
+
 const db = require("../data/database");
 
 const router = express.Router();
@@ -17,6 +19,28 @@ router.get('/new-post', async function(req, res) {
   const authors = await db.getDb().collection("authors").find().toArray();
   
   res.render('create-post', { authors: authors  });
+});
+
+router.post("/posts", async function(req, res) {
+  const authorId = new mongodb.ObjectId(req.body.author);
+  const author = await db.getDb().collection("authors").findOne({ _id: authorId })
+
+  const newPost = {
+    title: req.body.title,
+    summary: req.body.summary,
+    body: req.body.content,
+    date: new Date(),
+    author: {
+      id: authorId,
+      name: author.name,
+      email: author.email
+    }
+  }
+
+  // 데이터베이스 쓰기
+  const result = await db.getDb().collection("posts").insertOne(newPost); // id 리턴
+  
+  res.redirect("/posts");
 });
 
 module.exports = router;
